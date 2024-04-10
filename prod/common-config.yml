@@ -19,9 +19,6 @@ services:
   microservice-base-config:
     extends:
       service: network-deploy-service
-    depends_on:
-      configserver:
-        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -35,3 +32,10 @@ services:
       SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
+
+  microservice-eureka-config:
+    extends:
+      service: microservice-configserver-config
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/
+
