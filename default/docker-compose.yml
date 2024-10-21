@@ -41,7 +41,7 @@ services:
 
 
   configserver:
-    image: "jcgarciamed/configserver:s8"
+    image: "jcgarciamed/configserver:s9"
     container_name: configserver-ms
     ports:
       - "8071:8071"
@@ -56,7 +56,7 @@ services:
       service: microservice-base-config
 
   eurekaserver:
-    image: "jcgarciamed/eurekaserver:s8"
+    image: "jcgarciamed/eurekaserver:s9"
     container_name: eurekaserver-ms
     ports:
       - "8070:8070"
@@ -76,7 +76,7 @@ services:
       SPRING_APPLICATION_NAME: "eurekaserver"
 
   accounts:
-    image: "jcgarciamed/accounts:s8"
+    image: "jcgarciamed/accounts:s9"
     container_name: accounts-ms
     ports:
       - "8080:8080"
@@ -90,12 +90,18 @@ services:
         condition: service_healthy
       eurekaserver:
         condition: service_healthy
+    healthcheck:
+      test: "curl --fail --silent localhost:8080/actuator/health/readiness | grep UP || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
     extends:
       file: common-config.yml
       service: microservice-eureka-config
 
   loans:
-    image: "jcgarciamed/loans:s8"
+    image: "jcgarciamed/loans:s9"
     container_name: loans-ms
     ports:
       - "8090:8090"
@@ -109,12 +115,18 @@ services:
         condition: service_healthy
       eurekaserver:
         condition: service_healthy
+    healthcheck:
+      test: "curl --fail --silent localhost:8090/actuator/health/readiness | grep UP || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
     extends:
       file: common-config.yml
       service: microservice-eureka-config
 
   loans1:
-    image: "jcgarciamed/loans:s8"
+    image: "jcgarciamed/loans:s9"
     container_name: loans-ms1
     ports:
       - "8091:8090"
@@ -128,12 +140,18 @@ services:
         condition: service_healthy
       eurekaserver:
         condition: service_healthy
+    healthcheck:
+      test: "curl --fail --silent localhost:8090/actuator/health/readiness | grep UP || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
     extends:
       file: common-config.yml
       service: microservice-eureka-config
 
   cards:
-    image: "jcgarciamed/cards:s8"
+    image: "jcgarciamed/cards:s9"
     container_name: cards-ms
     ports:
       - "9000:9000"
@@ -147,12 +165,18 @@ services:
         condition: service_healthy
       eurekaserver:
         condition: service_healthy
+    healthcheck:
+      test: "curl --fail --silent localhost:9000/actuator/health/readiness | grep UP || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
     extends:
       file: common-config.yml
       service: microservice-eureka-config
 
   identity:
-    image: "jcgarciamed/identity:s8"
+    image: "jcgarciamed/identity:s9"
     container_name: identity-ms
     ports:
       - "9030:9030"
@@ -160,12 +184,40 @@ services:
       SPRING_APPLICATION_NAME: "identity"
       SPRING_DATASOURCE_URL: "jdbc:mysql://identitydb:3306/identitydb"
     depends_on:
-      cardsdb:
+      identitydb:
         condition: service_healthy
       configserver:
         condition: service_healthy
       eurekaserver:
         condition: service_healthy
+    healthcheck:
+      test: "curl --fail --silent localhost:9030/actuator/health/readiness | grep UP || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    extends:
+      file: common-config.yml
+      service: microservice-eureka-config
+
+  gatewayserver:
+    image: "jcgarciamed/gatewayserver:s9"
+    container_name: gatewayserver-ms
+    ports:
+      - "8072:8072"
+    depends_on:
+      accounts:
+        condition: service_healthy
+      loans:
+        condition: service_healthy
+      cards:
+        condition: service_healthy
+      identity:
+        condition: service_healthy
+      loans1:
+        condition: service_healthy
+    environment:
+      SPRING_APPLICATION_NAME: "gatewayserver"
     extends:
       file: common-config.yml
       service: microservice-eureka-config
